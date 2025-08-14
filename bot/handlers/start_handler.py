@@ -9,7 +9,6 @@ from bot.keyboards import (
     HISTORY_BTN,
     ALL_TRANSACTIONS_BTN,
     DEPOSITS_ONLY_BTN,
-    INVESTMENTS_ONLY_BTN,
     WITHDRAWALS_ONLY_BTN,
 )
 from bot.messages import (
@@ -137,10 +136,9 @@ async def handle_history(update: Update, context: ContextTypes.DEFAULT_TYPE):
             filter_key = "all"
         elif text == DEPOSITS_ONLY_BTN:
             filter_key = "deposits"
-        elif text == INVESTMENTS_ONLY_BTN:
-            filter_key = "investments"
         elif text == WITHDRAWALS_ONLY_BTN:
             filter_key = "withdrawals"
+
     elif "history_filter" in context.user_data:
         filter_key = context.user_data["history_filter"]
 

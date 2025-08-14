@@ -14,7 +14,7 @@ def msg_already_registered() -> str:
         "🏦 Type /deposit to see your deposit address\n"
         "👥 Use /referral for your referral code\n\n"
         f"{sep}\n"
-        "🚀 *Ready to invest \\?* Start now \\!"
+        "🚀 *Ready\\?* Start now \\!"
     )
 
 # ============================ WITHDRAWAL MESSAGES ============================
@@ -135,7 +135,6 @@ def msg_new_referral(sponsor_username: str, friend_username: str) -> str:
     return (
         "🎉 *You got a new referral\\!* 🎉\n"
         f"Your friend, {friend_username_esc}, has joined the bot \\!\n"
-        "You will receive a commission on their investment \\!\n"
     )
 
 
@@ -154,7 +153,7 @@ def msg_welcome_registration(
     escaped_share_link = escape_markdown_v2(share_link)
 
     return (
-        "🎉 *WELCOME TO THE TRON INVESTMENT BOT \\!* 🎉\n"
+        "🎉 *WELCOME TO THE TRON BOT \\!* 🎉\n"
         f"{sep}\n\n"
         f"👋 Hi {escaped_username} \\!\n"
         f"✅ Registration successful \\!\n\n"
@@ -168,21 +167,19 @@ def msg_welcome_registration(
         f"`{escaped_share_link}`\n\n"
         "💡 Share it to earn commissions \\!\n"
         f"{sponsor_line or ''}\n"
-        "🚀 *START INVESTING*\n"
+        "🚀 *START*\n"
         f"{sep}\n\n"
         "📋 *Next Steps \\:*\n\n"
         "1️⃣ Deposit TRON \\(TRX\\) to your address\n"
         "2️⃣ Use /balance to check your balance\n"
-        "3️⃣ Choose an investment plan\n"
         "4️⃣ Start earning profits \\!\n"
         f"{sep}\n"
         "💬 *Useful Commands :*\n\n"
         "• /deposit \\- See your deposit address\n"
         "• /balance \\- Check your balance\n"
-        "• /invest \\- Investment plans\n"
         "• /referral \\- Referral system\n"
         "• /help \\- Help and support\n\n"
-        "🎯 *Ready to start your investment journey \\?*\n"
+        "🎯 *Ready to start \\?*\n"
         f"📞 Support \\: {escaped_support_username}"
     )
 
