@@ -27,6 +27,9 @@ DEPOSIT_TO_MAIN_WALLET_RATE = float(os.getenv('DEPOSIT_TO_MAIN_WALLET_RATE', 0.9
 # Withdrawal fee rate (e.g. 0.01 = 1%)
 WITHDRAWAL_FEE_RATE = float(os.getenv('WITHDRAWAL_FEE_RATE', 0.01))
 
+# Referral rate (e.g. 0.01 = 1%)
+REFERRAL_RATE = float(os.getenv('REFERRAL_RATE', 0.01))
+
 # Security
 ENCRYPTION_KEY = os.getenv('ENCRYPTION_KEY')
 
