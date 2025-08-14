@@ -114,18 +114,44 @@ def msg_deposit_panel(address: str) -> str:
     sep = get_separator()
     addr = escape_markdown_v2(address)
     return (
-        "💳 *TRON DEPOSIT ADDRESS*\n"
+        "🏦 *DEPOSIT TRX*\n"
         f"{sep}\n\n"
-        "📍 *Your Address\\(click to copy\\)*\\:\n\n"
+        "Send TRX to your personal address below\\:\n\n"
         f"`{addr}`\n\n"
-        "📋 *Important Instructions*\\:\n"
         "• Only send TRX to this address\n"
-        "• Minimum deposit\\: 1 TRX\n"
-        "• Deposits usually take 1\\-3 minutes\n"
-        "• Double\\-check the address before sending\n\n"
-        "🔒 *Security Notice*\\:\n"
-        "• Never share this address publicly\\!\n"
-        "• This is your personal deposit address\\."
+        "• Minimum deposit: 1 TRX\n"
+        "• Funds are credited after confirmations\n"
+    )
+
+
+def msg_deposit_confirmed(amount_trx: str, tx_id: str) -> str:
+    return (
+        f"💰 *Deposit of {escape_markdown_v2(amount_trx)} TRX confirmed*\\.\n"
+        f"TX\\: `{escape_markdown_v2(tx_id)}`"
+    )
+
+
+def msg_deposit_failed(amount_trx: str, error: str) -> str:
+    return (
+        f"❌ *Deposit of {escape_markdown_v2(amount_trx)} TRX failed*\\.\n"
+        f"Error\\: {escape_markdown_v2(error)}"
+    )
+
+
+def msg_deposit_forwarded(amount_trx: str, deposit_tx_id: str, tx_id: str) -> str:
+    return (
+        f"✅ *Forwarded {escape_markdown_v2(amount_trx)} TRX\\.*\n"
+        f"From deposit\\:\n\n"
+        f"`{escape_markdown_v2(deposit_tx_id)}`\n\n"
+        f"to main wallet\\.\n\n"
+        f"TX\\: `{escape_markdown_v2(tx_id)}`"
+    )
+
+
+def msg_deposit_forward_failed(amount_trx: str, deposit_tx_id: str, error: str) -> str:
+    return (
+        f"❌ *{escape_markdown_v2(amount_trx)} from deposit {escape_markdown_v2(deposit_tx_id)} to main wallet failed*\\.\n"
+        f"Error\\: {escape_markdown_v2(error)}"
     )
 
 
