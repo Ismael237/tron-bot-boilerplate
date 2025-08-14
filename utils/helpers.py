@@ -3,10 +3,10 @@ import random
 import string
 import re
 
-def generate_referral_code(length=8):
+def generate_referral_code(length: int = 8):
     return ''.join(random.choices(string.ascii_lowercase + string.digits, k=length))
 
-def generate_share_link(bot_username, referral_code):
+def generate_share_link(bot_username: str, referral_code: str):
     return f"https://t.me/{bot_username}?start={referral_code}"
 
 def escape_markdown_v2(text: str) -> str:
