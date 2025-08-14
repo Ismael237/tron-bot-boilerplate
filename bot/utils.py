@@ -2,16 +2,17 @@ import asyncio
 import datetime
 from telegram import Bot, ReplyKeyboardMarkup
 from telegram.constants import ParseMode
-
+from decimal import Decimal
 from utils.helpers import escape_markdown_v2
 from config import TELEGRAM_BOT_TOKEN
 
 
-def format_trx(amount):
-    return f"{float(amount):,.2f} TRX"
+def format_trx(amount: float | Decimal, decimals: int = 2) -> str:
+    """Format TRX amount for display"""
+    return f"{float(amount):.{decimals}f} TRX"
 
 
-def format_trx_escaped(amount: str) -> str:
+def format_trx_escaped(amount: float | Decimal) -> str:
     """Format a TRX amount with escaping for Telegram Markdown V2"""
     return escape_markdown_v2(format_trx(amount))
 

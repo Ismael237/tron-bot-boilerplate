@@ -1,3 +1,4 @@
+from decimal import Decimal
 from config import TELEGRAM_ADMIN_USERNAME
 from utils.helpers import escape_markdown_v2, get_separator
 from bot.utils import format_trx, format_date, format_trx_escaped
@@ -37,7 +38,7 @@ def msg_invalid_amount() -> str:
 def msg_amount_out_of_bounds(min_withdrawal: str, daily_limit: str) -> str:
     return (
         "❗ Amount must be between "
-        f"{escape_markdown_v2(min_withdrawal)} and {escape_markdown_v2(daily_limit)} TRX\\."
+        f"{escape_markdown_v2(min_withdrawal)} and {escape_markdown_v2(daily_limit)}\\."
     )
 
 
@@ -94,24 +95,27 @@ def msg_session_expired() -> str:
     return "❌ *Withdrawal session expired\\."
 
 # Worker notifications for withdrawal processing
-def msg_withdrawal_processed(amount_trx: str, tx_id: str) -> str:
+def msg_withdrawal_processed(amount_trx: Decimal, tx_id: str) -> str:
+    amount_trx = format_trx_escaped(amount_trx)
     return (
-        f"✅ *Withdrawal of {format_trx_escaped(amount_trx)} TRX processed successfully\\.*\n"
+        f"✅ *Withdrawal of {amount_trx} processed successfully\\.*\n"
         f"TX\\: `{escape_markdown_v2(tx_id)}`"
     )
 
 
-def msg_withdrawal_failed(amount_trx: str, error: str, tx_id: str | None = None) -> str:
-    msg = f"❌ *Withdrawal of {format_trx_escaped(amount_trx)} failed\\.*\n"
+def msg_withdrawal_failed(amount_trx: Decimal, error: str, tx_id: str | None = None) -> str:
+    amount_trx = format_trx_escaped(amount_trx)
+    msg = f"❌ *Withdrawal of {amount_trx} failed\\.*\n"
     if tx_id:
         msg += f"TX\\: `{escape_markdown_v2(tx_id)}`\n"
     msg += f"Error\\: {escape_markdown_v2(error)}\n"
     return msg
 
 
-def msg_withdrawal_failed_insufficient_balance(amount_trx: str) -> str:
+def msg_withdrawal_failed_insufficient_balance(amount_trx: Decimal) -> str:
+    amount_trx = format_trx_escaped(amount_trx)
     return (
-        f"❌ *Withdrawal of {format_trx_escaped(amount_trx)} failed\\.*\n"
+        f"❌ *Withdrawal of {amount_trx} failed\\.*\n"
         f"Insufficient balance\\.\n"
     )
 
@@ -146,23 +150,26 @@ def msg_deposit_panel(address: str) -> str:
     )
 
 
-def msg_deposit_confirmed(amount_trx: str, tx_id: str) -> str:
+def msg_deposit_confirmed(amount_trx: Decimal, tx_id: str) -> str:
+    amount_trx = format_trx_escaped(amount_trx)
     return (
-        f"💰 *Deposit of {escape_markdown_v2(amount_trx)} TRX confirmed*\\.\n"
+        f"💰 *Deposit of {amount_trx} confirmed*\\.\n"
         f"TX\\: `{escape_markdown_v2(tx_id)}`"
     )
 
 
-def msg_deposit_failed(amount_trx: str, error: str) -> str:
+def msg_deposit_failed(amount_trx: Decimal, error: str) -> str:
+    amount_trx = format_trx_escaped(amount_trx)
     return (
-        f"❌ *Deposit of {escape_markdown_v2(amount_trx)} TRX failed*\\.\n"
+        f"❌ *Deposit of {amount_trx} failed*\\.\n"
         f"Error\\: {escape_markdown_v2(error)}"
     )
 
 
-def msg_deposit_forwarded(amount_trx: str, deposit_tx_id: str, tx_id: str) -> str:
+def msg_deposit_forwarded(amount_trx: Decimal, deposit_tx_id: str, tx_id: str) -> str:
+    amount_trx = format_trx_escaped(amount_trx)
     return (
-        f"✅ *Forwarded {escape_markdown_v2(amount_trx)} TRX\\.*\n"
+        f"✅ *Forwarded {amount_trx}\\.*\n"
         f"From deposit\\:\n\n"
         f"`{escape_markdown_v2(deposit_tx_id)}`\n\n"
         f"to main wallet\\.\n\n"
@@ -170,15 +177,15 @@ def msg_deposit_forwarded(amount_trx: str, deposit_tx_id: str, tx_id: str) -> st
     )
 
 
-def msg_deposit_forward_failed(amount_trx: str, deposit_tx_id: str, error: str) -> str:
+def msg_deposit_forward_failed(amount_trx: Decimal, deposit_tx_id: str, error: str) -> str:
+    amount_trx = format_trx_escaped(amount_trx)
     return (
-        f"❌ *{escape_markdown_v2(amount_trx)} from deposit {escape_markdown_v2(deposit_tx_id)} to main wallet failed*\\.\n"
+        f"❌ *{amount_trx} from deposit {escape_markdown_v2(deposit_tx_id)} to main wallet failed*\\.\n"
         f"Error\\: {escape_markdown_v2(error)}"
     )
 
 
 def msg_new_referral(sponsor_username: str, friend_username: str) -> str:
-    sponsor_username_esc = escape_markdown_v2(sponsor_username)
     friend_username_esc = escape_markdown_v2(friend_username)
     return (
         "🎉 *You got a new referral\\!* 🎉\n"
@@ -240,20 +247,21 @@ def msg_user_not_found() -> str:
 
 
 def msg_balance(
-    balance_trx: str,
-    total_invested_trx: str,
-    total_earned_trx: str,
+    balance_trx: Decimal,
+    total_deposited_trx: Decimal,
+    total_withdrawn_trx: Decimal,
 ) -> str:
+    balance_trx_esc = format_trx_escaped(balance_trx)
+    total_deposited_trx_esc = format_trx_escaped(total_deposited_trx)
+    total_withdrawn_trx_esc = format_trx_escaped(total_withdrawn_trx)
     sep = get_separator()
     return (
         "💰 *Your TRX Balance*\n"
         f"{sep}\n"
-        f"💵 *Balance*\\: `{escape_markdown_v2(balance_trx)}`\n"
+        f"💵 *Balance*\\: `{balance_trx_esc}`\n"
         f"{sep}\n"
-        f"💳 *Total Invested*\\: `{escape_markdown_v2(total_invested_trx)}`\n"
-        f"💸 *Total Earned*\\: `{escape_markdown_v2(total_earned_trx)}`\n"
-        f"{sep}\n"
-        f"📈 _{escape_markdown_v2('Keep investing to grow your earnings!')}_\n"
+        f"💳 *Total Deposited*\\: `{total_deposited_trx_esc}`\n"
+        f"🏧 *Total Withdrawn*\\: `{total_withdrawn_trx_esc}`\n"
     )
 
 
@@ -294,7 +302,7 @@ def msg_history_page(transactions, page: int, total_pages: int) -> str:
         lines.extend([
             f"  {type_emoji} *Type*\\: {escape_markdown_v2(getattr(getattr(tx, 'type', None), 'value', ''))}\n",
             f"  📅 *Date*\\: `{escape_markdown_v2(format_date(tx.created_at))}`\n",
-            f"  💵 *Amount*\\: {format_trx_escaped(tx.amount)}\n",
+            f"  💵 *Amount*\\: {format_trx_escaped(tx.amount_trx)}\n",
             f"  {stat_emoji} *Status*\\: _{escape_markdown_v2(getattr(getattr(tx, 'status', None), 'value', ''))}_\n",
             f"{sep}\n",
         ])

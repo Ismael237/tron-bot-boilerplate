@@ -22,9 +22,8 @@ from bot.messages import (
     msg_history_page,
     msg_user_not_found,
 )
-from bot.utils import ITEMS_PER_PAGE
 from services.user_service import UserService
-from config import TELEGRAM_ADMIN_USERNAME
+from config import ITEMS_PER_PAGE, TELEGRAM_ADMIN_USERNAME
 from utils.helpers import escape_markdown_v2
 
 
@@ -33,6 +32,8 @@ from utils.helpers import escape_markdown_v2
 async def handle_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     telegram_id = str(update.effective_user.id)
     username = update.effective_user.username or ""
+    first_name = update.effective_user.first_name or "User"
+    last_name = update.effective_user.last_name or None
 
     # if already registered, show main menu
     user = UserService.get_user_by_telegram(telegram_id)
@@ -72,6 +73,8 @@ async def handle_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = UserService.create_user(
         telegram_id=telegram_id,
         username=username,
+        first_name=first_name,
+        last_name=last_name,
         referral_code=code,
         sponsor_id=sponsor_id,
     )
@@ -104,9 +107,9 @@ async def handle_balance(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_markdown_v2(
         msg_balance(
-            balance_trx=str(user.account_balance),
-            total_invested_trx=str(user.total_invested),
-            total_earned_trx=str(user.total_earned),
+            balance_trx=user.account_balance,
+            total_deposited_trx=user.total_deposited,
+            total_withdrawn_trx=user.total_withdrawn,
         ),
         reply_markup=main_reply_keyboard(),
     )

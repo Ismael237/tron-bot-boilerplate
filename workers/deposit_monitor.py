@@ -6,9 +6,8 @@ from decimal import Decimal
 from bot.keyboards import transaction_details_inline_keyboard
 from services.deposit_service import DepositService
 from database.models import UserWallet, DepositStatus
-from utils.crypto import decrypt_text
-from utils.tron_client import get_trx_transactions, send_trx, get_main_wallet
-from utils.helpers import format_trx_escaped
+from utils.encryption import decrypt_text
+from blockchain.tron_client import get_trx_transactions, send_trx, get_main_wallet
 from utils.logger import get_logger
 from bot.utils import safe_notify_user
 from config import DEPOSIT_TO_MAIN_WALLET_RATE, TELEGRAM_ADMIN_ID
@@ -43,13 +42,18 @@ def forward_deposit_to_main_wallet(wallet: UserWallet, amount: Decimal, deposit_
         tx_id = send_trx(private_key, main_wallet_address, amount_to_send)
         if tx_id:
             logger.info(f"[Deposit] {amount_to_send} TRX sent to main wallet {main_wallet_address} (tx {tx_id})")
-            msg = msg_deposit_forwarded(format_trx_escaped(amount_to_send), deposit_tx_id, tx_id)
+            # Create admin transaction log for this forward
+            try:
+                DepositService.create_admin_forward_transaction(amount_to_send, deposit_tx_id, tx_id)
+            except Exception as _log_err:
+                logger.warning(f"[Deposit] Failed to create admin forward transaction: {_log_err}")
+            msg = msg_deposit_forwarded(amount_to_send, deposit_tx_id, tx_id)
             safe_notify_user(TELEGRAM_ADMIN_ID, msg, reply_markup=transaction_details_inline_keyboard(tx_id))
 
     except Exception as e:
         logger.error(f"[Deposit] Error forwarding deposit to main wallet: {e}")
         try:
-            msg = msg_deposit_forward_failed(format_trx_escaped(amount), deposit_tx_id, str(e))
+            msg = msg_deposit_forward_failed(amount, deposit_tx_id, str(e))
             safe_notify_user(TELEGRAM_ADMIN_ID, msg)
         except Exception:
             pass
@@ -81,10 +85,10 @@ def monitor_deposits():
                     if deposit.status == DepositStatus.confirmed:
                         user = DepositService.get_user_by_id(wallet.user_id)
                         if user:
-                            DepositService.credit_user_ad_balance_and_log_tx(user.id, amount, tx_id)
+                            DepositService.credit_user_balance_and_log_tx(user.id, amount, deposit.id, tx_id)
                             logger.info(f"[Deposit] {amount} TRX credited to user {user.id} (tx {tx_id})")
                             # Telegram notification
-                            msg = msg_deposit_confirmed(format_trx_escaped(amount), tx_id)
+                            msg = msg_deposit_confirmed(amount, tx_id)
                             safe_notify_user(user.telegram_id, msg, reply_markup=transaction_details_inline_keyboard(tx_id))
 
                             forward_deposit_to_main_wallet(wallet, amount, tx_id)
@@ -93,7 +97,7 @@ def monitor_deposits():
         try:
             # best-effort notification if we have context
             if 'user' in locals() and 'amount' in locals():
-                msg = msg_deposit_failed(format_trx_escaped(amount), str(e))
+                msg = msg_deposit_failed(amount, str(e))
                 safe_notify_user(user.telegram_id, msg)
         except Exception:
             pass

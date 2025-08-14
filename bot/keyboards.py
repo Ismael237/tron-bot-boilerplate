@@ -1,7 +1,6 @@
 from telegram import ReplyKeyboardMarkup, InlineKeyboardMarkup, InlineKeyboardButton
-from bot.utils import format_trx
+
 from config import TRON_EXPLORER_URL
-from utils.helpers import get_utc_date
 
 # ==================== CONSTANTS ====================
 # Main Menu Buttons
@@ -17,6 +16,7 @@ MAIN_MENU_BTN = "🏠 Main Menu"
 BACK_BTN = "🔙 Back"
 CANCEL_BTN = "❌ Cancel"
 CANCEL_WITHDRAW_BTN = "❌ Cancel Withdrawal"
+CONFIRM_WITHDRAW_BTN = "✅ Confirm Withdrawal"
 
 # Balance Submenu Buttons
 VIEW_BALANCE_BTN = "💰 View Balance"
@@ -102,6 +102,18 @@ def settings_reply_keyboard():
         [ABOUT_BTN, Q_A_BTN],
         [REFERRAL_INFO_BTN],
         [MAIN_MENU_BTN]
+    ]
+    return ReplyKeyboardMarkup(
+        keyboard,
+        resize_keyboard=True,
+        one_time_keyboard=False
+    )
+
+def withdrawal_confirm_reply_keyboard():
+    """Reply keyboard for confirming or cancelling a withdrawal"""
+    keyboard = [
+        [CONFIRM_WITHDRAW_BTN],
+        [CANCEL_WITHDRAW_BTN]
     ]
     return ReplyKeyboardMarkup(
         keyboard,

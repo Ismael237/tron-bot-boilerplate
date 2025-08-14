@@ -6,7 +6,7 @@ from bot.keyboards import (
     HISTORY_BTN, HELP_BTN, MAIN_MENU_BTN, REFERRAL_INFO_BTN,
     SETTINGS_BTN, SUPPORT_BTN, ABOUT_BTN,
     BALANCE_BTN, WITHDRAW_BTN,
-    SHARE_EARN_BTN, CANCEL_WITHDRAW_BTN,
+    SHARE_EARN_BTN, CANCEL_WITHDRAW_BTN, CONFIRM_WITHDRAW_BTN,
     Q_A_BTN, ALL_TRANSACTIONS_BTN, DEPOSITS_ONLY_BTN,
     WITHDRAWALS_ONLY_BTN,
 )
@@ -28,6 +28,8 @@ async def route_text_message(update: Update, context: ContextTypes.DEFAULT_TYPE)
         await withdrawal_handler.handle_withdraw(update, context)
     elif text == CANCEL_WITHDRAW_BTN:
         await withdrawal_handler.cancel_withdraw(update, context)
+    elif text == CONFIRM_WITHDRAW_BTN:
+        await withdrawal_handler.handle_withdraw_free_text(update, context)
     elif text in {HISTORY_BTN, ALL_TRANSACTIONS_BTN, DEPOSITS_ONLY_BTN, WITHDRAWALS_ONLY_BTN}:
         await start_handler.handle_history(update, context)
     elif text == SETTINGS_BTN:

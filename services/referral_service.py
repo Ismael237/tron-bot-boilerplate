@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from database.database import SessionLocal
+from database.database import get_db_session
 from database.models import User, ReferralCommission, CommissionStatus
 
 
@@ -10,39 +10,30 @@ class ReferralService:
     # Users
     @staticmethod
     def get_user_by_telegram(telegram_id: str) -> Optional[User]:
-        session = SessionLocal()
-        try:
+        with get_db_session() as session:
             return session.query(User).filter_by(telegram_id=telegram_id).first()
-        finally:
-            session.close()
 
     @staticmethod
     def get_direct_referrals(user_id: int) -> List[User]:
-        session = SessionLocal()
-        try:
+        with get_db_session() as session:
             return session.query(User).filter_by(sponsor_id=user_id).all()
-        finally:
-            session.close()
 
     # Commissions
     @staticmethod
     def get_commissions(user_id: int) -> List[ReferralCommission]:
-        session = SessionLocal()
-        try:
+        with get_db_session() as session:
             return session.query(ReferralCommission).filter_by(user_id=user_id).all()
-        finally:
-            session.close()
 
     @staticmethod
     def summarize_commissions(user_id: int):
         """Return a simple summary for single-level referrals: total_paid, total_pending."""
-        session = SessionLocal()
-        try:
+        with get_db_session() as session:
             total_paid = 0.0
             total_pending = 0.0
             rows = session.query(ReferralCommission).filter_by(user_id=user_id).all()
             for row in rows:
-                amount = float(row.commission_amount)
+                # Align to models: field is amount_trx (Decimal)
+                amount = float(row.amount_trx)
                 if row.status == CommissionStatus.paid:
                     total_paid += amount
                 else:
@@ -51,8 +42,6 @@ class ReferralService:
                 "total_paid": total_paid,
                 "total_pending": total_pending,
             }
-        finally:
-            session.close()
 
 
 # Backward-compatible forwarders to preserve existing routing (Telegram logic in handlers)

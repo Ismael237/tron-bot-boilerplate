@@ -8,9 +8,11 @@ from telegram.ext import ContextTypes
 from bot.keyboards import (
     MAIN_MENU_BTN,
     withdraw_reply_keyboard,
-    withdrawal_confirm_inline_keyboard,
     main_reply_keyboard,
     cancel_withdraw_keyboard,
+    withdrawal_confirm_reply_keyboard,
+    CONFIRM_WITHDRAW_BTN,
+    CANCEL_WITHDRAW_BTN,
 )
 from bot.messages import (
     msg_withdraw_start,
@@ -93,6 +95,12 @@ async def handle_withdraw_free_text(update: Update, context: ContextTypes.DEFAUL
         await process_withdraw_message(update, context)
     elif step == "cancel":
         await cancel_withdraw(update, context)
+    elif step == "confirm":
+        text = (update.message.text or "").strip()
+        if text == CONFIRM_WITHDRAW_BTN:
+            await _finalize_withdrawal(update, context, state)
+        elif text == CANCEL_WITHDRAW_BTN:
+            await cancel_withdraw(update, context)
 
 
 async def _handle_amount_input(update: Update, context: ContextTypes.DEFAULT_TYPE, state: Dict):
@@ -138,61 +146,50 @@ async def _handle_address_input(update: Update, context: ContextTypes.DEFAULT_TY
 
     await update.message.reply_markdown_v2(
         msg_confirm_withdraw(format_trx(amount), address),
-        reply_markup=withdrawal_confirm_inline_keyboard(amount),
+        reply_markup=withdrawal_confirm_reply_keyboard(),
     )
 
 
-# ==============================
-# Callback query handlers
-# ==============================
-async def confirm_withdraw(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    state = _withdraw_state(context)
-    if state.get("step") != "confirm":
-        await query.edit_message_text(msg_session_expired(), parse_mode=ParseMode.MARKDOWN_V2)
-        _reset_state(context)
-        await query.message.reply_markdown_v2(MAIN_MENU_BTN, reply_markup=main_reply_keyboard())
-        return
-
+async def _finalize_withdrawal(update: Update, context: ContextTypes.DEFAULT_TYPE, state: Dict):
+    """Finalize the withdrawal after user confirms via reply keyboard.
+    Performs balance checks, daily limit enforcement, creates withdrawal and transaction,
+    notifies the user, and resets state.
+    """
     amount = state.get("amount")
     address = state.get("address")
 
-    user = WithdrawalService.get_user_by_telegram(str(query.from_user.id))
+    user = WithdrawalService.get_user_by_telegram(str(update.effective_user.id))
     if not user or Decimal(user.account_balance) < amount:
-        await query.edit_message_text(msg_insufficient_balance(), parse_mode=ParseMode.MARKDOWN_V2)
+        await update.message.reply_markdown_v2(msg_insufficient_balance())
         _reset_state(context)
-        await query.message.reply_markdown_v2(MAIN_MENU_BTN, reply_markup=main_reply_keyboard())
+        await update.message.reply_markdown_v2(MAIN_MENU_BTN, reply_markup=main_reply_keyboard())
         return
 
-    # Check daily withdrawal limit using service
     daily_withdrawals = WithdrawalService.get_daily_withdrawals(user.id)
     total_daily_withdrawn = sum(Decimal(str(w.amount_trx)) for w in daily_withdrawals)
     remaining_limit = Decimal(str(DAILY_WITHDRAWAL_LIMIT)) - Decimal(str(total_daily_withdrawn))
 
     if amount > remaining_limit:
-        await query.edit_message_text(
+        await update.message.reply_markdown_v2(
             msg_daily_limit_exceeded(
                 format_trx(DAILY_WITHDRAWAL_LIMIT),
                 format_trx(total_daily_withdrawn),
                 format_trx(remaining_limit),
                 format_trx(amount),
-            ),
-            parse_mode=ParseMode.MARKDOWN_V2,
+            )
         )
         _reset_state(context)
-        await query.message.reply_markdown_v2(MAIN_MENU_BTN, reply_markup=main_reply_keyboard())
+        await update.message.reply_markdown_v2(MAIN_MENU_BTN, reply_markup=main_reply_keyboard())
         return
 
-    # Create withdrawal and transaction via service
     withdrawal = WithdrawalService.create_withdrawal(user.id, amount, address)
     WithdrawalService.create_withdrawal_transaction(user.id, amount, withdrawal.id)
 
     msg = msg_withdraw_submitted(format_trx(amount), format_trx(remaining_limit - amount))
-    await query.edit_message_text(msg, parse_mode=ParseMode.MARKDOWN_V2)
+    await update.message.reply_markdown_v2(msg)
 
     _reset_state(context)
-    await query.message.reply_markdown_v2(MAIN_MENU_BTN, reply_markup=main_reply_keyboard())
+    await update.message.reply_markdown_v2(MAIN_MENU_BTN, reply_markup=main_reply_keyboard())
 
 
 async def cancel_withdraw(update: Update, context: ContextTypes.DEFAULT_TYPE):

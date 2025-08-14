@@ -10,7 +10,7 @@ from bot.messages import (
 from services.deposit_service import DepositService
 
 
-async def handle_deposit(update: Update):
+async def handle_deposit(update: Update, context: ContextTypes.DEFAULT_TYPE):
     telegram_id = str(update.effective_user.id)
 
     user = DepositService.get_user_by_telegram(telegram_id)
