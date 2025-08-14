@@ -93,6 +93,28 @@ def msg_withdraw_cancelled() -> str:
 def msg_session_expired() -> str:
     return "❌ *Withdrawal session expired\\."
 
+# Worker notifications for withdrawal processing
+def msg_withdrawal_processed(amount_trx: str, tx_id: str) -> str:
+    return (
+        f"✅ *Withdrawal of {format_trx_escaped(amount_trx)} TRX processed successfully\\.*\n"
+        f"TX\\: `{escape_markdown_v2(tx_id)}`"
+    )
+
+
+def msg_withdrawal_failed(amount_trx: str, error: str, tx_id: str | None = None) -> str:
+    msg = f"❌ *Withdrawal of {format_trx_escaped(amount_trx)} failed\\.*\n"
+    if tx_id:
+        msg += f"TX\\: `{escape_markdown_v2(tx_id)}`\n"
+    msg += f"Error\\: {escape_markdown_v2(error)}\n"
+    return msg
+
+
+def msg_withdrawal_failed_insufficient_balance(amount_trx: str) -> str:
+    return (
+        f"❌ *Withdrawal of {format_trx_escaped(amount_trx)} failed\\.*\n"
+        f"Insufficient balance\\.\n"
+    )
+
 # ============================ DEPOSIT MESSAGES ============================
 
 def msg_deposit_not_registered() -> str:
