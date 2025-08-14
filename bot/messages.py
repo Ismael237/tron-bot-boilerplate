@@ -17,6 +17,82 @@ def msg_already_registered() -> str:
         "🚀 *Ready to invest \\?* Start now \\!"
     )
 
+# ============================ WITHDRAWAL MESSAGES ============================
+
+def msg_withdraw_start(balance_trx: str, min_withdrawal: str, daily_limit: str, main_menu_btn: str) -> str:
+    return (
+        f"💸 *Your current balance\\:* \n"
+        f"\\({escape_markdown_v2(balance_trx)}\\)\n\n"
+        f"💳 *How much do you want to withdraw?*\n"
+        f"• Choose an option below\n"
+        f"• Or enter a custom amount \\(min {escape_markdown_v2(min_withdrawal)}, max {escape_markdown_v2(daily_limit)}\\)\n"
+        f"• Type {escape_markdown_v2(main_menu_btn)} to cancel the operation\n\n"
+    )
+
+
+def msg_invalid_amount() -> str:
+    return r"❌ *Invalid amount\.* Please enter a numeric value\."
+
+
+def msg_amount_out_of_bounds(min_withdrawal: str, daily_limit: str) -> str:
+    return (
+        "❗ Amount must be between "
+        f"{escape_markdown_v2(min_withdrawal)} and {escape_markdown_v2(daily_limit)} TRX\\."
+    )
+
+
+def msg_insufficient_balance() -> str:
+    return r"❌ *Insufficient balance\.*"
+
+
+def msg_ask_address(amount_trx: str, net_amount_trx: str, fee_percent: str) -> str:
+    return (
+        f"✉️ *Enter your TRON address*\n\n"
+        f"• Amount\\: {escape_markdown_v2(amount_trx)}\n"
+        f"• Fee\\: {escape_markdown_v2(fee_percent)}\n"
+        f"• Net\\: {escape_markdown_v2(net_amount_trx)}\n"
+    )
+
+
+def msg_invalid_address() -> str:
+    return r"❌ *Invalid TRON address\.* Please enter a valid address\."
+
+
+def msg_confirm_withdraw(amount_trx: str, address: str) -> str:
+    addr = escape_markdown_v2(address)
+    return (
+        "⚠️ *Confirm withdrawal*\n\n"
+        f"💸 *Withdraw {escape_markdown_v2(amount_trx)} to\\:*\n"
+        f"`{addr}`"
+    )
+
+
+def msg_daily_limit_exceeded(daily_limit: str, withdrawn: str, remaining: str, requested: str) -> str:
+    return (
+        "❌ *Daily withdrawal limit exceeded\\!*\n\n"
+        f"• Daily limit\\: {escape_markdown_v2(daily_limit)}\n"
+        f"• Already withdrawn today\\: {escape_markdown_v2(withdrawn)}\n"
+        f"• Remaining limit\\: {escape_markdown_v2(remaining)}\n"
+        f"• Requested amount\\: {escape_markdown_v2(requested)}\n\n"
+    )
+
+
+def msg_withdraw_submitted(amount_trx: str, remaining_limit_trx: str) -> str:
+    return (
+        "✅ *Withdrawal request submitted successfully\\!*\n\n"
+        f"• Amount\\: {escape_markdown_v2(amount_trx)}\n"
+        f"• Daily limit remaining\\: {escape_markdown_v2(remaining_limit_trx)}\n\n"
+        "Please wait for the funds to be sent to your TRON address\\."
+    )
+
+
+def msg_withdraw_cancelled() -> str:
+    return "❌ *Withdrawal cancelled\\."
+
+
+def msg_session_expired() -> str:
+    return "❌ *Withdrawal session expired\\."
+
 # ============================ DEPOSIT MESSAGES ============================
 
 def msg_deposit_not_registered() -> str:
