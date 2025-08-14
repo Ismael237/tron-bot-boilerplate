@@ -17,6 +17,41 @@ def msg_already_registered() -> str:
         "🚀 *Ready to invest \\?* Start now \\!"
     )
 
+# ============================ DEPOSIT MESSAGES ============================
+
+def msg_deposit_not_registered() -> str:
+    return (
+        "❌ *You are not registered yet\\!*\n\n"
+        "Please use /start to register and get your deposit address\\."
+    )
+
+
+def msg_deposit_wallet_not_found() -> str:
+    return (
+        "⚠️ *Wallet not found\\!*\n\n"
+        "Please contact support to get your deposit address\\.\n"
+        "Use /support for assistance\\."
+    )
+
+
+def msg_deposit_panel(address: str) -> str:
+    sep = get_separator()
+    addr = escape_markdown_v2(address)
+    return (
+        "💳 *TRON DEPOSIT ADDRESS*\n"
+        f"{sep}\n\n"
+        "📍 *Your Address\\(click to copy\\)*\\:\n\n"
+        f"`{addr}`\n\n"
+        "📋 *Important Instructions*\\:\n"
+        "• Only send TRX to this address\n"
+        "• Minimum deposit\\: 1 TRX\n"
+        "• Deposits usually take 1\\-3 minutes\n"
+        "• Double\\-check the address before sending\n\n"
+        "🔒 *Security Notice*\\:\n"
+        "• Never share this address publicly\\!\n"
+        "• This is your personal deposit address\\."
+    )
+
 
 def msg_new_referral(sponsor_username: str, friend_username: str) -> str:
     sponsor_username_esc = escape_markdown_v2(sponsor_username)
