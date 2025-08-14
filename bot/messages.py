@@ -298,7 +298,7 @@ def msg_support_panel(admin_username: str | None) -> str:
         f"{sep}\n\n"
         "Got stuck or spotted a bug ? Our team is here to help\\!\n\n"
         f"📞 *Contact\\:* @{escape_markdown_v2(u)}\n"
-        f"⏱️ We reply within *24h* \\({escape_markdown_v2("usually faster")}\\)\n\n"
+        f"⏱️ We reply within *24h* \\({escape_markdown_v2('usually faster')}\\)\n\n"
         "When messaging, please include your *Telegram ID* and a short description of the issue 🙏\n"
     )
 
@@ -367,4 +367,39 @@ def msg_faq_panel(daily_withdrawal_limit: str, min_withdrawal: str, withdrawal_f
         "• Contact support team\n"
         "• Report issues\n"
         "• Get assistance\n\n"
+    )
+
+# ============================ REFERRAL MESSAGES ============================
+
+def msg_referral_overview(
+    referral_code: str,
+    share_link: str,
+    total_referrals: str,
+    total_paid_trx: str,
+    total_pending_trx: str,
+) -> str:
+    sep = get_separator()
+    return (
+        "👥 *REFERRAL OVERVIEW*\n"
+        f"{sep}\n\n"
+        "🔗 *Your Code*\n"
+        f"`{escape_markdown_v2(referral_code)}`\n\n"
+        "📤 *Share Link*\n"
+        f"`{escape_markdown_v2(share_link)}`\n\n"
+        "📈 *Stats*\n"
+        f"• Referrals\\: {escape_markdown_v2(total_referrals)}\n"
+        f"• Earned\\: {escape_markdown_v2(total_paid_trx)}\n"
+        f"• Pending\\: {escape_markdown_v2(total_pending_trx)}\n"
+    )
+
+
+def msg_referral_info_single_level(rate_percent: str) -> str:
+    sep = get_separator()
+    return (
+        "🌟 *REFERRAL PROGRAM*\n"
+        f"{sep}\n\n"
+        "You earn a commission from direct referrals\\!\n\n"
+        "📊 *Commission*\n"
+        f"• Direct referrals\\: `{escape_markdown_v2(rate_percent)}%`\n\n"
+        "💡 Share your code and link to start earning\\!"
     )
