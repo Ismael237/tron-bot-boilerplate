@@ -1,10 +1,19 @@
 from telegram.ext import Application, CommandHandler, MessageHandler, filters
 from telegram.ext import CallbackQueryHandler
-from config import TELEGRAM_BOT_TOKEN
+
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
+from apscheduler.executors.pool import ThreadPoolExecutor as APSchedulerThreadPoolExecutor
+import atexit
+
+from config import (
+    TELEGRAM_BOT_TOKEN, DATABASE_URL,
+    DEPOSIT_CHECK_INTERVAL, WITHDRAWAL_PROCESS_INTERVAL,
+    AP_SCHEDULER_THREAD_POOL_SIZE
+)
 from database.database import init_database
 from utils.logger import logger
 
-# Import explicit handlers from modules
 from bot.handlers.start_handler import (
     handle_start,
     handle_balance,
@@ -16,10 +25,29 @@ from bot.handlers.withdrawal_handler import handle_withdraw, confirm_withdraw, c
 from bot.handlers.referral_handler import handle_referral, handle_referral_info
 from bot.handlers.message_router import route_text_message, handle_error
 from bot.handlers import settings_handler
+from workers.deposit_monitor import run_deposit_monitor
+from workers.withdrawal_processor import run_withdrawal_processor
+
+
+def start_scheduler():
+    jobstores = {'default': SQLAlchemyJobStore(url=DATABASE_URL)}
+    executors = {'default': APSchedulerThreadPoolExecutor(AP_SCHEDULER_THREAD_POOL_SIZE)}
+    scheduler = BackgroundScheduler(jobstores=jobstores, executors=executors, timezone='UTC')
+    # cron job
+    scheduler.add_job(run_deposit_monitor, 'interval', minutes=DEPOSIT_CHECK_INTERVAL, id='monitor_deposits', replace_existing=True)
+    scheduler.add_job(run_withdrawal_processor, 'interval', minutes=WITHDRAWAL_PROCESS_INTERVAL, id='process_withdrawals', replace_existing=True)
+    scheduler.start()
+    logger.info("[Scheduler] APScheduler started with persistent jobs.")
+    atexit.register(lambda: scheduler.shutdown())
+    return scheduler 
+
 
 def main():
     # Initialize DB
     init_database()
+    
+    # Start scheduler
+    start_scheduler()
 
     # Create bot application
     app = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
@@ -72,6 +100,7 @@ def main():
     # Start polling
     logger.info("[Main] Bot is running...")
     app.run_polling()
+
 
 if __name__ == "__main__":
     logger.info("[Main] Running main...")

@@ -30,6 +30,10 @@ WITHDRAWAL_FEE_RATE = float(os.getenv('WITHDRAWAL_FEE_RATE', 0.01))
 # Referral rate (e.g. 0.01 = 1%)
 REFERRAL_RATE = float(os.getenv('REFERRAL_RATE', 0.01))
 
+# Worker Configuration (in minutes)
+DEPOSIT_CHECK_INTERVAL = int(os.getenv('DEPOSIT_CHECK_INTERVAL', 4))
+WITHDRAWAL_PROCESS_INTERVAL = int(os.getenv('WITHDRAWAL_PROCESS_INTERVAL', 5))
+
 # Security
 ENCRYPTION_KEY = os.getenv('ENCRYPTION_KEY')
 
@@ -37,3 +41,6 @@ ENCRYPTION_KEY = os.getenv('ENCRYPTION_KEY')
 LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
 LOG_FILE = os.getenv('LOG_FILE', 'logs/bot_marketplace.log')
 ERROR_LOG_FILE = os.getenv('ERROR_LOG_FILE', 'logs/errors.log')
+
+# APScheduler
+AP_SCHEDULER_THREAD_POOL_SIZE = int(os.getenv('AP_SCHEDULER_THREAD_POOL_SIZE', 5))
