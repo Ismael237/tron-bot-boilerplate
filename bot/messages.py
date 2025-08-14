@@ -144,3 +144,116 @@ def msg_history_page(transactions, page: int, total_pages: int) -> str:
         ])
 
     return "".join(lines)
+
+# ============================ SETTINGS / HELP MESSAGES ============================
+
+def msg_settings_menu() -> str:
+    sep = get_separator()
+    return (
+        "⚙️ *BOT SETTINGS*\n"
+        f"{sep}\n\n"
+        "🤖 *Need help?*\n"
+        "• 🗒️ Guide & Commands\n"
+        "• 🆘 Support\n"
+        "• ℹ️ About the Bot\n"
+        "• ❓ FAQ\n\n"
+        "👇 _Select an option from the menu below:_\n"
+    )
+
+
+def msg_help_panel() -> str:
+    sep = get_separator()
+    return (
+        "🤖 *TRON Investment Bot — Help Center*\n"
+        f"{sep}\n\n"
+        "📋 *Commands Overview*\n\n"
+        "• /start — Register\n"
+        "• /deposit — Show your personal TRX deposit address\n"
+        "• /balance — Check your wallet balance\n"
+        "• /withdraw — Request a withdrawal\n"
+        "• /referral — View referral stats & link\n"
+        "• /history — See transaction history\n"
+        "• /help — Display this help panel\n\n"
+        "💡 *Tip\\:* You can always tap the menu buttons if you prefer the graphical interface\\.\n"
+    )
+
+
+def msg_support_panel(admin_username: str | None) -> str:
+    sep = get_separator()
+    u = admin_username or TELEGRAM_ADMIN_USERNAME or "admin"
+    
+    return (
+        "🆘 *SUPPORT DESK*\n"
+        f"{sep}\n\n"
+        "Got stuck or spotted a bug ? Our team is here to help\\!\n\n"
+        f"📞 *Contact\\:* @{escape_markdown_v2(u)}\n"
+        f"⏱️ We reply within *24h* \\({escape_markdown_v2("usually faster")}\\)\n\n"
+        "When messaging, please include your *Telegram ID* and a short description of the issue 🙏\n"
+    )
+
+
+def msg_about_panel() -> str:
+    sep = get_separator()
+    return (
+        "ℹ️ *ABOUT THIS BOT*\n"
+        f"{sep}\n\n"
+        "Welcome to this Telegram bot \\- a powerful tool for interacting with the TRON blockchain\\!\n\n"
+        "🔍 *Transparent* — Every transaction is visible on the blockchain\\.\n"
+        "💻 *Feature\\-rich* — Enjoy a growing set of features and commands\\.\n"
+        "👥 *Share & Earn* — Refer friends and earn rewards\\.\n"
+    )
+
+
+def msg_faq_panel(daily_withdrawal_limit: str, min_withdrawal: str, withdrawal_fee_rate_percent: str) -> str:
+    sep = get_separator()
+    min_withdrawal = escape_markdown_v2(min_withdrawal)
+    daily_withdrawal_limit = escape_markdown_v2(daily_withdrawal_limit)
+    withdrawal_fee_rate_percent = escape_markdown_v2(withdrawal_fee_rate_percent)
+    return (
+        "❓ *FREQUENTLY ASKED QUESTIONS*\n"
+        f"{sep}\n\n"
+        "*Q\\:* How do I deposit TRX\\?\n"
+        "*A\\:* Use the /deposit command to get your personal TRX address\\.\n"
+        "• Minimum deposit\\: 1 TRX\n"
+        "• Processing time\\: 1\\-3 minutes\n"
+        "• Only send TRX to this address\n"
+        "• Double\\-check the address before sending\n\n"
+
+        "*Q\\:* What are the fees\\?\n"
+        "*A\\:*\n"
+        "• Deposits: Free\n"
+        f"• Withdrawals: {withdrawal_fee_rate_percent} network fee and platform commission\n"
+        f"• Minimum withdrawal\\: {min_withdrawal}\n"
+        f"• Daily withdrawal limit\\: {daily_withdrawal_limit}\n\n"
+
+        "*Q\\:* How do I withdraw my funds\\?\n"
+        "*A\\:* Use the /withdraw command to\\:\n"
+        f"• Enter amount \\({min_withdrawal}, max {daily_withdrawal_limit}\\)\n"
+        "• Provide your TRX address\n"
+        "• Confirm withdrawal\n"
+        "• Processing time\\: 1\\-3 minutes\n\n"
+
+        "*Q\\:* How do I check my balance\\?\n"
+        "*A\\:* Use the /balance command to view\\:\n"
+        "• Current account balance\n"
+        "• Total earned\n"
+        "• Investment status\n\n"
+
+        "*Q\\:* How do I get my referral code\\?\n"
+        "*A\\:* Use the /referral command to\\:\n"
+        "• Get your unique referral code\n"
+        "• Share your referral link\n"
+        "• Track your referrals\n\n"
+
+        "*Q\\:* How do I check my transaction history\\?\n"
+        "*A\\:* Use the /history command to view\\:\n"
+        "• All transactions\n"
+        "• Deposits\n"
+        "• Withdrawals\n\n"
+
+        "*Q\\:* What should I do if I need help\\?\n"
+        "*A\\:* Use the /support command to\\:\n"
+        "• Contact support team\n"
+        "• Report issues\n"
+        "• Get assistance\n\n"
+    )
