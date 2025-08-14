@@ -4,6 +4,10 @@ A production-ready Python boilerplate for building Telegram or service bots that
 
 This repository is intentionally generic: no logic or business rules are included.
 
+## Version
+
+Current version: 1.0.0
+
 ## Highlights
 
 - __TRON payments__: deposit monitoring and withdrawal processing
@@ -61,7 +65,7 @@ Note: File names listed above reflect the typical layout in this repo; keep your
 
 1) Clone the repository
 ```bash
-git clone <repo_url>
+git clone https://github.com/Ismael237/tron-bot-boilerplate.git
 cd tron-bot-boilerplate
 ```
 
