@@ -6,7 +6,7 @@ This repository is intentionally generic: no logic or business rules are include
 
 ## Version
 
-Current version: 1.0.0
+Current version: 1.1.0
 
 ## Highlights
 
@@ -21,40 +21,108 @@ Current version: 1.0.0
 
 ```
 tron-bot-boilerplate/
-├── main.py                 # Application entrypoint
-├── config.py               # Centralized configuration
+├── main.py                     # Application entrypoint
+├── config.py                   # Centralized configuration
 ├── blockchain/
-│   └── tron_client.py      # TRON RPC client integration
-├── bot/
-│   ├── handlers/           # Bot command/message handlers
-│   ├── keyboards.py        # Keyboard layouts
-│   ├── messages.py         # Message building & formatting
-│   ├── utils.py            # Bot helpers/utilities
-│   └── ...                 # Other bot modules
-├── services/
-│   ├── user_service.py     # User management
-│   ├── wallet_service.py   # Wallet generation & management
-│   ├── deposit_service.py  # Deposit monitoring & processing
-│   ├── withdrawal_service.py # Withdrawals & limits
-│   └── ...                 # Other domain services
+│   └── tron_client.py          # TRON RPC client integration
 ├── database/
-│   ├── models.py           # SQLAlchemy ORM models
-│   ├── database.py         # DB session/engine
-│   └── migrations/         # Alembic migrations
+│   ├── database.py             # DB session/engine
+│   ├── models.py               # SQLAlchemy ORM models
+│   └── migrations/
+│       └── ...                 # Alembic migrations
+├── shared/                     # Shared services & components
+│   ├── base_service.py
+│   └── user_service.py
+├── core/                       # Central routing/middleware/decorators
+│   ├── router_registry.py
+│   ├── middleware.py
+│   └── decorators.py
+├── modules/                    # Functional, self-contained modules
+│   ├── common/
+│   │   ├── __init__.py
+│   │   ├── handlers.py
+│   │   ├── keyboards.py
+│   │   ├── messages.py
+│   │   ├── router.py
+│   │   ├── services.py
+│   │   └── instances.py        # Module singletons (service/handler)
+│   ├── deposit/
+│   │   ├── __init__.py
+│   │   ├── handlers.py
+│   │   ├── keyboards.py
+│   │   ├── messages.py
+│   │   ├── router.py
+│   │   ├── services.py
+│   │   ├── templates/
+│   │   │   └── ...
+│   │   └── instances.py        # Module singletons (service/handler)
+│   ├── withdrawal/
+│   │   ├── __init__.py
+│   │   ├── handlers.py
+│   │   ├── keyboards.py
+│   │   ├── messages.py
+│   │   ├── router.py
+│   │   ├── services.py
+│   │   ├── templates/
+│   │   │   └── ...
+│   │   └── instances.py
+│   ├── referral/
+│   │   ├── __init__.py
+│   │   ├── handlers.py
+│   │   ├── keyboards.py
+│   │   ├── messages.py
+│   │   ├── router.py
+│   │   ├── services.py
+│   │   └── instances.py
+│   └── settings/
+│       ├── __init__.py
+│       ├── handlers.py
+│       ├── keyboards.py
+│       ├── messages.py
+│       ├── router.py
+│       ├── services.py
+│       └── instances.py
 ├── workers/
-│   ├── deposit_monitor.py  # Periodic deposit check
-│   └── withdrawal_processor.py # Periodic withdrawal processing
+│   ├── base_worker.py          # Base worker class
+│   ├── deposit_monitor.py      # Deposit monitoring
+│   └── withdrawal_processor.py # Withdrawal processing
 ├── utils/
-│   ├── encryption.py       # Symmetric encryption helpers
-│   ├── validators.py       # Input validation
-│   ├── helpers.py          # Misc helpers
-│   └── logger.py           # Logging setup
-├── requirements.txt        # Python dependencies
-├── .env.example            # Environment variables template
-└── generate_key.py         # Helper to generate encryption key
+│   ├── __init__.py
+│   ├── constants.py
+│   ├── encryption.py
+│   ├── helpers.py
+│   ├── logger.py
+│   ├── validators.py
+│   ├── crypto/
+│   │   ├── __init__.py
+│   │   ├── address_validator.py
+│   │   ├── encryption.py
+│   │   └── transaction_utils.py
+│   ├── data/
+│   │   ├── __init__.py
+│   │   ├── converters.py
+│   │   ├── sanitizers.py
+│   │   └── validators.py
+│   └── telegram/
+│       ├── __init__.py
+│       ├── keyboard_builder.py
+│       ├── message_formatter.py
+│       ├── notifier.py
+│       └── user_utils.py
+├── requirements.txt            # Python dependencies
+├── .env.example                # Environment variables template
+└── generate_key.py             # Helper to generate encryption key
 ```
 
-Note: File names listed above reflect the typical layout in this repo; keep your own modules as needed.
+Note: Each module includes an `instances.py` file that wires up the module's service and handler as singletons. Example:
+
+```python
+from .handler import DepositHandler
+from .service import DepositService
+
+deposit_service = DepositService()
+deposit_handler = DepositHandler(deposit_service)
+```
 
 ## Requirements
 
