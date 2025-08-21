@@ -1,30 +1,52 @@
 import asyncio
+import atexit
+
+from modules.common.instances import common_handler
 from telegram.ext import Application, CommandHandler, MessageHandler, filters
 from telegram.ext import CallbackQueryHandler
+
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.executors.pool import ThreadPoolExecutor as APSchedulerThreadPoolExecutor
-import atexit
+
 from config import (
     TELEGRAM_BOT_TOKEN, DATABASE_URL,
     DEPOSIT_CHECK_INTERVAL, WITHDRAWAL_PROCESS_INTERVAL,
     AP_SCHEDULER_THREAD_POOL_SIZE
 )
-from database.database import init_database
-from utils.logger import logger
-from bot.handlers.start_handler import (
-    handle_start,
-    handle_balance,
-    handle_history,
-    handle_history_pagination,
-)
-from bot.handlers.deposit_handler import handle_deposit
-from bot.handlers.withdrawal_handler import handle_withdraw
-from bot.handlers.referral_handler import handle_referral, handle_referral_info
-from bot.handlers.message_router import route_text_message, handle_error
-from bot.handlers.settings_handler import handle_settings, back_to_main_menu, handle_help, handle_about, handle_support, handle_qa
+
+from database import init_database
+
+from core.middleware import AuthMiddleware, LoggingMiddleware, RateLimitMiddleware
+from core.router_registry import RouterRegistry
+
+from modules.account import AccountRouter, account_handler
+from modules.common import CommonRouter
+from modules.deposit import DepositRouter, deposit_handler
+from modules.info import InfoRouter, info_handler
+from modules.referral import ReferralRouter, referral_handler
+from modules.withdrawal import WithdrawalRouter, withdrawal_handler
+
 from workers.deposit_monitor import run_deposit_monitor
 from workers.withdrawal_processor import run_withdrawal_processor
+
+from utils.logger import get_logger
+
+
+logger = get_logger(__name__)
+
+# Build a single global RouterRegistry with all routers and middlewares
+registry = RouterRegistry()
+registry.register_module("account", AccountRouter())
+registry.register_module("common", CommonRouter())
+registry.register_module("info", InfoRouter())
+registry.register_module("referral", ReferralRouter())
+registry.register_module("deposit", DepositRouter())
+registry.register_module("withdrawal", WithdrawalRouter())
+registry.register_middleware(AuthMiddleware())
+registry.register_middleware(LoggingMiddleware())
+registry.register_middleware(RateLimitMiddleware(1.0))
+
 
 def start_scheduler():
     jobstores = {'default': SQLAlchemyJobStore(url=DATABASE_URL)}
@@ -40,34 +62,45 @@ def start_scheduler():
     atexit.register(lambda: scheduler.shutdown())
     return scheduler
 
+
 async def setup_bot():
     """Configure and setup the bot with all handlers"""
     # Create bot application
     app = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
+
+    async def handle_message(update, context):
+        text = update.message.text if update.message else ""
+        handler = registry.find_handler(text)
+        if handler:
+            await registry.execute_with_middlewares(handler, update, context)
+            return
+        if "withdraw" in context.user_data:
+            await withdrawal_handler.handle_withdraw_free_text(update, context)
+        else:
+            await update.message.reply_text("❓ Invalid command")
     
     # Register command handlers (explicit)
-    app.add_handler(CommandHandler("start", handle_start))
-    app.add_handler(CommandHandler("deposit", handle_deposit))
-    app.add_handler(CommandHandler("balance", handle_balance))
-    app.add_handler(CommandHandler("withdraw", handle_withdraw))
-    app.add_handler(CommandHandler("referral", handle_referral))
-    app.add_handler(CommandHandler("history", handle_history))
-    app.add_handler(CommandHandler("help", handle_help))
-    app.add_handler(CommandHandler("settings", handle_settings))
-    app.add_handler(CommandHandler("about", handle_about))
-    app.add_handler(CommandHandler("support", handle_support))
-    app.add_handler(CommandHandler("qa", handle_qa))
-    app.add_handler(CommandHandler("main", back_to_main_menu))
+    app.add_handler(CommandHandler("start", account_handler.handle_start))
+    app.add_handler(CommandHandler("deposit", deposit_handler.handle_deposit))
+    app.add_handler(CommandHandler("balance", account_handler.handle_balance))
+    app.add_handler(CommandHandler("withdraw", withdrawal_handler.handle_withdraw))
+    app.add_handler(CommandHandler("referral", referral_handler.handle_referral))
+    app.add_handler(CommandHandler("history", account_handler.handle_history))
+    app.add_handler(CommandHandler("help", info_handler.handle_help))
+    app.add_handler(CommandHandler("about", info_handler.handle_about))
+    app.add_handler(CommandHandler("support", info_handler.handle_support))
+    app.add_handler(CommandHandler("faq", info_handler.handle_faq))
+    app.add_handler(CommandHandler("main", common_handler.back_to_main_menu))
     
     # Register free-text message router
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, route_text_message))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     
     # Register callback query handlers
-    app.add_handler(CallbackQueryHandler(handle_history_pagination, pattern=r"^history_(?:all|deposits|withdrawals)_page_\d+$"))
-    app.add_handler(CallbackQueryHandler(handle_referral_info, pattern=r"^referral_info$"))
+    app.add_handler(CallbackQueryHandler(account_handler.handle_history_pagination, pattern=r"^history_(?:all|deposits|withdrawals)_page_\d+$"))
+    app.add_handler(CallbackQueryHandler(info_handler.handle_referral_info, pattern=r"^referral_info$"))
     
     # Error handler
-    app.add_error_handler(handle_error)
+    # app.add_error_handler(common_handler.handle_error)
     
     return app
 
@@ -76,7 +109,7 @@ async def main():
     init_database()
     
     # Start scheduler
-    start_scheduler()
+    # start_scheduler()
     
     # Setup bot
     app = await setup_bot()
