@@ -17,7 +17,7 @@ class BaseService(ABC):
     """
 
     def __init__(self) -> None:
-        self.db: Optional[Session] = None
+        self._session: Optional[Session] = None
         self._db_ctx = None  # holds the active context manager when get_db() is used
 
     # ---- Session handling ----
@@ -27,29 +27,29 @@ class BaseService(ABC):
 
     def get_db(self) -> Session:
         """Return a reusable Session, opened via the context manager on first use."""
-        if self.db is None:
+        if self._session is None:
             self._db_ctx = get_db_session()
-            self.db = self._db_ctx.__enter__()
-        return self.db
+            self._session = self._db_ctx.__enter__()
+        return self._session
 
     def commit(self) -> None:
         """Commit current session safely (rollback on failure)."""
-        if self.db is None:
+        if self._session is None:
             return
         try:
-            self.db.commit()
+            self._session.commit()
         except Exception:
-            self.db.rollback()
+            self._session.rollback()
             raise
 
     def close_db(self) -> None:
         """Close the persisted Session if opened via get_db()."""
-        if self.db is not None and self._db_ctx is not None:
+        if self._session is not None and self._db_ctx is not None:
             try:
                 # Exit the context manager, which will close the session
                 self._db_ctx.__exit__(None, None, None)
             finally:
-                self.db = None
+                self._session = None
                 self._db_ctx = None
 
     # Context manager support
